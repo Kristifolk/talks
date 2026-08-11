@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CI/CD — Караваева Кристина</title>
+  <link rel="stylesheet" href="vendor/reveal/reveal.css">
+  <link rel="stylesheet" href="css/vetmanager.css">
+</head>
+<body>
+<script>if (new URLSearchParams(location.search).has('review-all')) document.body.classList.add('review-all');</script>
+<div class="reveal">
+  <div class="slides">
+
+    <section class="title-slide" data-background-color="#00245f">
+      <img class="title-slide__art" src="assets/images/title-concept-multiple-developers-shared-system-v3-motion-lines.png" alt="">
+      <h1>CI/CD</h1><div class="rule"></div><div class="author">Караваева Кристина</div>
+      <aside class="notes">Коротко представиться и обозначить цель: поговорить не только о pipeline, а о постоянной интеграции как о способе совместной работы.</aside>
+    </section>
+
+    <section class="center pipeline-intro">
+      <img class="pipeline-intro__screen" src="assets/images/slide-02-image-01.png" alt="GitLab и CI">
+      <div class="vm-brand-footer footer-left" aria-hidden="true">
+        <img src="assets/images/vetmanager-footer-logo.png" alt="">
+      </div>
+      <aside class="notes">Начать с привычного образа CI в GitLab, а затем отделить интерфейс pipeline от самой инженерной практики.</aside>
+    </section>
+
+    <section class="dark-path" data-background-color="#000072">
+      <h2>Путь изменения: от задачи до клиента</h2>
+      <div class="path-track path-track--combined">
+        <div class="path-illustration path-illustration--task fragment" data-fragment-index="0"><img src="assets/images/vm-cat-laptop-transparent.png" alt="Задача от Product Manager"><span>Задача от<br>Product Manager</span></div><div class="path-arrow path-link fragment" data-fragment-index="1"></div>
+        <div class="path-step path-step--developer fragment" data-fragment-index="2">Developer<span class="path-caption">Git Push</span></div><div class="path-arrow path-link fragment" data-fragment-index="3"></div>
+        <div class="path-step fragment" data-fragment-index="4">Code</div><div class="path-arrow path-link fragment" data-fragment-index="5"></div>
+        <div class="path-step path-step--ci fragment" data-fragment-index="6">CI</div><div class="path-arrow path-link fragment" data-fragment-index="8"></div>
+        <div class="path-cd-group fragment" data-fragment-index="9">
+          <span class="path-phase-label">CD</span>
+          <div class="path-step">Release</div><div class="path-arrow path-link"></div><div class="path-step path-step--deploy">Deploy</div>
+        </div>
+        <div class="path-arrow path-link path-link--client fragment" data-fragment-index="10"></div>
+        <div class="path-illustration path-illustration--client fragment" data-fragment-index="11"><img src="assets/images/vm-cat-vet-transparent.png" alt="Клиент"><span>Клиент</span></div>
+      </div>
+      <div class="ci-workflow-panel fragment" data-fragment-index="7">
+        <div class="ci-workflow-title">Базовый workflow CI</div>
+        <div class="ci-workflow-flow">
+          <span class="ci-flow-stage">Build</span><b class="ci-flow-arrow">→</b><span class="ci-flow-stage">Tests</span><b class="ci-flow-arrow">→</b><span class="ci-flow-stage">Lint</span><b class="ci-flow-arrow">→</b><span class="ci-flow-stage">Static Analysis</span><b class="ci-flow-arrow">→</b><span class="ci-ready ci-flow-stage">Ready for deploy</span>
+        </div>
+      </div>
+      <div class="path-conclusion fragment" data-fragment-index="12">Ценность появляется, когда изменение дошло до клиента</div>
+      <div class="vm-brand-footer footer-standard footer-inverse" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo-inverse-transparent.png" alt=""></div>
+      <aside class="notes">Любое изменение начинается не с кода, а с потребности клиента. Программист написал код, залил изменения — CI автоматически проверил их. Но на этом путь изменения не заканчивается. Дальше начинается CD: подготавливается Release и выполняется Deploy. И только после Deploy результат становится доступен клиенту. Поэтому написанный или даже успешно проверенный код сам по себе ещё не приносит ценности. Ценность появляется, когда изменение действительно дошло до клиента.</aside>
+    </section>
+
+    <section class="definition-slide">
+      <h2>Из чего состоит CI/CD</h2>
+      <div class="definition-grid">
+        <div class="definition-card definition-card--focus">
+          <h3>Continuous<br>Integration</h3>
+          <p>Практика частого объединения небольших изменений с общей кодовой базой и их автоматической проверки</p>
+        </div>
+        <div class="definition-card">
+          <h3>Continuous<br>Delivery</h3>
+          <p>Система всегда готова к релизу, выкладка в production запускается вручную</p>
+        </div>
+        <div class="definition-card">
+          <h3>Continuous<br>Deployment</h3>
+          <p>Каждое успешно проверенное изменение автоматически выкладывается в production</p>
+        </div>
+      </div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">CI — это практика частого объединения небольших изменений и их автоматической проверки. Continuous Delivery означает, что система постоянно готова к выпуску, но production deploy запускает человек. В Continuous Deployment успешно проверенное изменение выкладывается автоматически. Основной акцент первой части доклада — Continuous Integration.</aside>
+    </section>
+
+    <section>
+      <h2>Типичный pipeline</h2>
+      <div class="screenshot-one"><img src="assets/images/slide-06-image-01.png" alt="Pipeline"></div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">На реальном pipeline показать параллельные этапы. Подчеркнуть: pipeline — инструмент CI, но не вся практика.</aside>
+    </section>
+
+    <section class="goals-slide">
+      <h2>Основные цели CI</h2>
+      <div class="goals-layout">
+        <div class="definition-grid">
+          <div class="definition-card definition-card--focus"><h3>1. Быстрая<br>обратная связь</h3><ul><li>Успешно ли собираются Docker-образы приложения</li><li>Упали ли тесты</li><li>Есть ли конфликт зависимостей</li></ul></div>
+          <div class="definition-card"><h3>2. Меньше<br>integration hell</h3><ul><li>Меньше merge-конфликтов</li><li>Раньше видны несовместимые изменения</li><li>Интеграция маленькими порциями</li></ul></div>
+          <div class="definition-card"><h3>3. Автоматизация<br>качества</h3><ul><li>Code style</li><li>Security scanning и SAST</li><li>Coverage</li><li>Dependency checks</li></ul></div>
+        </div>
+        <div class="goals-ci-visual"><img src="assets/images/continuous-integration-green-pipeline.png" alt="Успешный pipeline Continuous Integration"></div>
+      </div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">CI нужен не ради зелёного экрана. Он быстрее сообщает о проблемах, уменьшает стоимость интеграции и автоматизирует повторяющиеся проверки.</aside>
+    </section>
+
+    <section class="practice-overview">
+      <h2>Практики хорошего CI</h2>
+      <div class="practice-grid">
+        <div class="card practice active">Маленькие коммиты</div><div class="card practice">Частые merge</div>
+        <div class="card practice">Fast feedback</div><div class="card practice">Green build policy</div>
+      </div><div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Первая практика — небольшие изменения. Чем меньше change set, тем проще понять причину проблемы.</aside>
+    </section>
+
+    <section class="small-change-criteria-slide">
+      <h2>Что значит небольшое изменение?</h2>
+      <p class="subtitle">Не количество строк, а свойства изменения</p>
+      <div class="small-change-criteria">
+        <div class="small-change-criterion"><span>1</span><strong>Одна понятная цель</strong></div>
+        <div class="small-change-criterion"><span>2</span><strong>Легко понять и проверить</strong></div>
+        <div class="small-change-criterion"><span>3</span><strong>Можно безопасно интегрировать</strong></div>
+        <div class="small-change-criterion"><span>4</span><strong>После интеграции система работает</strong></div>
+        <div class="small-change-criterion"><span>5</span><strong>Причину ошибки легко найти</strong></div>
+        <div class="small-change-criterion"><span>6</span><strong>Изменение можно быстро откатить</strong></div>
+      </div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Универсального числа строк нет. В книгах «Совершенный код» и «Экстремальное программирование» размер определяется не количеством строк, а свойствами изменения. А теперь посмотрим на исторические примеры, в которых почти все эти признаки нарушены.</aside>
+    </section>
+
+    <section>
+      <h2>Маленькие коммиты</h2><p class="subtitle">Чем меньше change set, тем легче локализовать проблему</p>
+      <div class="screenshots"><img src="assets/images/slide-09-image-01.png"><img src="assets/images/slide-09-image-02.png"></div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">На примерах показать, как тысячи строк и десятки файлов превращают одну задачу в набор связанных рисков.</aside>
+    </section>
+
+    <section class="practice-overview">
+      <h2>Практики хорошего CI</h2>
+      <div class="practice-grid">
+        <div class="card practice">Маленькие коммиты</div><div class="card practice active">Частые merge</div>
+        <div class="card practice">Fast feedback</div><div class="card practice">Green build policy</div>
+      </div><div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Следующая практика — не держать feature-ветки неделями.</aside>
+    </section>
+
+    <section>
+      <h2>Частые merge</h2><p class="subtitle">Feature branches не должны жить неделями</p>
+      <div class="screenshots"><img src="assets/images/slide-11-image-01.png"><img src="assets/images/slide-11-image-02.png"></div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Показать реальный возраст MR. За месяцы основная ветка и feature-ветка успевают сильно разойтись.</aside>
+    </section>
+
+    <section class="practice-overview">
+      <h2>Практики хорошего CI</h2>
+      <div class="practice-grid">
+        <div class="card practice">Маленькие коммиты</div><div class="card practice">Частые merge</div>
+        <div class="card practice active">Fast feedback</div><div class="card practice">Green build policy</div>
+      </div><div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Чем быстрее pipeline, тем быстрее разработчик получает полезный сигнал, пока контекст задачи не потерян.</aside>
+    </section>
+
+    <section>
+      <h2>Fast feedback</h2><p class="subtitle">CI должен быстро возвращать результат: в идеале — менее чем за 10 минут</p>
+      <div class="screenshots"><img src="assets/images/slide-13-image-01.png"><img src="assets/images/slide-13-image-02.png"></div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">На примере показать параллельное выполнение build, codecheck и тестов. Ждём не сумму этапов, а самый длинный путь.</aside>
+    </section>
+
+    <section class="practice-overview">
+      <h2>Практики хорошего CI</h2>
+      <div class="practice-grid">
+        <div class="card practice">Маленькие коммиты</div><div class="card practice">Частые merge</div>
+        <div class="card practice">Fast feedback</div><div class="card practice active">Green build policy</div>
+      </div><div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Красный pipeline останавливает дальнейшую интеграцию: сначала возвращаем доверие к основной ветке.</aside>
+    </section>
+
+    <section>
+      <h2>Green build policy</h2><p class="subtitle">Сломанный pipeline нельзя мерджить. Сначала возвращаем сборку в green</p>
+      <div class="screenshot-one"><img src="assets/images/slide-15-image-01.png"></div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Сломанная основная ветка перестаёт быть надёжной точкой интеграции. Исключения допустимы только по заранее определённой процедуре.</aside>
+    </section>
+
+    <section class="xp-rhythm-slide">
+      <h2>Когда изменение действительно закончено?</h2>
+      <div class="xp-guideline"><strong>Ориентир XP <span>(Extreme Programming)</span>:</strong> код не остаётся неинтегрированным дольше двух часов</div>
+      <div class="xp-cycle" aria-label="Рабочий цикл постоянной интеграции">
+        <div class="xp-step"><span>1</span><strong>Небольшой шаг</strong></div>
+        <div class="xp-arrow">→</div>
+        <div class="xp-step"><span>2</span><strong>Интеграция<br>с общей версией</strong></div>
+        <div class="xp-arrow">→</div>
+        <div class="xp-step xp-step--green"><span>3</span><strong>Все тесты<br>проходят</strong></div>
+        <div class="xp-arrow">→</div>
+        <div class="xp-step xp-step--next"><span>4</span><strong>Следующий шаг</strong></div>
+      </div>
+      <div class="xp-return"><span>Естественный ритм разработки</span></div>
+      <div class="xp-conclusion">Интеграция — завершение разработки, а не отдельная работа после неё</div>
+      <div class="xp-source">Кент Бек · «Экстремальное программирование», 2002 · Глава 16, стр. 127–129</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">
+        У Кента Бека задача не заканчивается в момент, когда разработчик дописал код или открыл merge request.
+
+        Каждый небольшой эпизод разработки должен завершиться интеграцией с текущей версией системы и прохождением всех тестов.
+
+        Бек приводит очень строгий ориентир: код не должен оставаться неинтегрированным дольше двух часов. Я не предлагаю буквально установить для каждой задачи такой норматив. Эта цифра показывает масштаб идеи: речь идёт о часах, а не о неделях жизни отдельной ветки.
+
+        После успешной интеграции разработчик может мысленно закрыть один шаг и перейти к следующему. Бек называет это естественным ритмом разработки.
+
+        Если изменение невозможно интегрировать небольшим законченным шагом, возможно, его нужно дополнительно декомпозировать.
+
+        Поэтому CI — это не pipeline, который запускается после окончания большой задачи. Это часть определения того, что задача действительно закончена.
+
+        Мы получили рабочий ритм CI: небольшое изменение интегрировано, проверено, основная версия снова в green. Теперь следующий вопрос — достаточно ли этого, чтобы текущую версию можно было выпустить в production?
+      </aside>
+    </section>
+
+    <section class="definition-slide definition-slide--delivery-focus">
+      <h2>Из чего состоит CI/CD</h2>
+      <div class="definition-grid">
+        <div class="definition-card"><h3>Continuous<br>Integration</h3><p>Практика частого объединения небольших изменений с общей кодовой базой и их автоматической проверки</p></div>
+        <div class="definition-card definition-card--current"><h3>Continuous<br>Delivery</h3><p>Система всегда готова к релизу, выкладка в production запускается вручную</p></div>
+        <div class="definition-card"><h3>Continuous<br>Deployment</h3><p>Каждое успешно проверенное изменение автоматически выкладывается в production</p></div>
+      </div><div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Переходим от интеграции к готовности системы к выпуску.</aside>
+    </section>
+
+    <section class="delivery-slide">
+      <h2>Delivery vs Deployment</h2>
+      <div class="delivery-compare">
+        <div class="card delivery-option delivery-option--manual"><h3>Continuous Delivery</h3></div>
+        <div class="card delivery-option delivery-option--automatic"><h3>Continuous Deployment</h3></div>
+        <svg class="delivery-arrows" viewBox="0 0 1000 550" preserveAspectRatio="none" aria-hidden="true">
+          <defs><marker id="delivery-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z"></path></marker></defs>
+          <path d="M250 205 L475 442"></path>
+          <path d="M750 205 L525 442"></path>
+        </svg>
+        <img class="delivery-cat" src="assets/images/cat-on-keyboard-transparent.png" alt="Кот стоит на клавиатуре">
+        <img class="delivery-automation" src="assets/images/love-is-continuous-deployment.png" alt="Три успешные проверки и автоматический deploy">
+        <div class="delivery-action delivery-action--manual">Manual approval</div>
+        <div class="delivery-action delivery-action--automatic">Automatic</div>
+        <div class="delivery-target"><strong>Deploy to production</strong></div>
+      </div>
+      <div class="conclusion">Каждое изменение потенциально готово к production</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Разница одна, но принципиальная: в Delivery решение о production deploy принимает человек, в Deployment — система.</aside>
+    </section>
+
+    <section class="content-fill ci-levels-slide">
+      <h2>CI и Continuous Delivery — разные уровни готовности</h2>
+      <div class="ci-levels-layout">
+        <div class="ci-levels-cards">
+          <div class="card active"><h3>Continuous Integration</h3><div class="step-list"><span>Небольшие изменения</span><b>↓</b><span>Частая интеграция</span><b>↓</b><span>Автоматические Build и Tests</span><b>↓</b><span>Ошибки исправляются сразу</span><b>↓</b><span>Основная ветка остаётся рабочей</span></div></div>
+          <div class="card"><h3>Continuous Delivery</h3><div class="step-list"><span>Версия технически готова</span><b>↓</b><span>Её можно выпустить в production по запросу</span></div></div>
+        </div>
+        <div class="ci-levels-visual"><img src="assets/images/continuous-integration-green-pipeline-cat.png" alt="Успешный pipeline Continuous Integration"></div>
+      </div>
+      <div class="conclusion">Работающий CI — необходимая основа, но ещё не гарантия Continuous Delivery</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">CI — постоянный процесс интеграции, а не состояние после разбора большого merge. Delivery добавляет готовность к выпуску.</aside>
+    </section>
+
+    <section class="content-fill delivery-benefits-slide">
+      <h2>Зачем нужен Continuous Delivery</h2><p class="subtitle">Готовность к релизу по запросу</p>
+      <div class="grid-2">
+        <div class="card"><h3>Техническая готовность</h3><p>Текущую версию можно выпустить без отдельной длительной стабилизации</p></div>
+        <div class="card"><h3>Ручной выбор момента</h3><p>Частота релизов — решение команды</p></div>
+      </div>
+      <div class="conclusion">Постоянная готовность к production — свойство процесса</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Delivery не требует ежедневных релизов. Важно, могла ли команда безопасно выпустить текущую версию раньше.</aside>
+    </section>
+
+    <section class="content-fill qa-readiness-slide">
+      <h2>QA: подтверждает или создаёт готовность?</h2>
+      <div class="grid-2">
+        <div class="card good"><h3>✓ Continuous Delivery есть</h3><div class="step-list"><span>Green pipeline</span><b>↓</b><span>Версия технически готова</span><b>↓</b><span>регресс</span><span>QA подтверждают качество и снижают остаточный риск</span></div><p class="card-verdict"><span>Готовность достигнута до QA</span></p></div>
+        <div class="card bad"><h3>✕ Continuous Delivery нет</h3><div class="step-list"><span>Green pipeline</span><b>↓</b><span>QA выявляет критические ошибки</span><b>↓</b><span>Исправления и длительная стабилизация</span><b>↓</b><span>Версия становится готовой</span></div><p class="card-verdict card-verdict--sequence"><span>Готовность создаётся только после QA</span><b>↓</b><span>Дополнительная нагрузка на QA</span></p></div>
+      </div><div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Ручное QA не противоречит Delivery. Вопрос в том, подтверждает QA готовность или только создаёт её через исправления.</aside>
+    </section>
+
+    <section class="deployment-visual-transition">
+      <h2>Continuous Deployment</h2>
+      <p>Автоматически — не значит бесконтрольно</p>
+      <img src="assets/images/continuous-deployment-controlled-automatic-deploy.png" alt="Контролируемый автоматический deploy: проверки, выкладка, мониторинг и rollback">
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Continuous Delivery означает, что версия технически готова, но решение о production deploy принимает человек. Чтобы перейти к Continuous Deployment, недостаточно просто удалить кнопку ручного подтверждения. Автоматический deploy безопасен не потому, что мы убрали человека, а потому, что заменили ручной approval автоматизированными проверками и контролем. Поэтому автоматически — не значит бесконтрольно.</aside>
+    </section>
+
+    <section class="compact-title deployment-fill">
+      <h2>Continuous Deployment: что нужно для автоматического deploy</h2>
+      <p class="subtitle">Green pipeline должен быть достаточным основанием для выпуска</p>
+      <div class="flow">
+        <div class="flow-node"><strong>До deploy</strong><br>Надёжные автоматические проверки критичных сценариев</div><div class="arrow">→</div>
+        <div class="flow-node primary"><strong>Production deploy</strong><br>Воспроизводимая автоматическая выкладка</div><div class="arrow">→</div>
+        <div class="flow-node"><strong>После deploy</strong><br>Health checks и мониторинг<br>Быстрый rollback при проблеме</div>
+      </div>
+      <div class="conclusion">Убираем ручной approval только после автоматизации контроля риска</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Green pipeline должен стать достаточным основанием для безопасной выкладки. До deploy автоматически проверяются критичные пользовательские сценарии, зависимости, конфигурация и другие существенные риски. Если после green pipeline всё ещё обязателен ручной регресс, без которого неизвестно, работает ли приложение, автоматически выкладывать такую версию нельзя. Сам production deploy должен быть воспроизводимым и не зависеть от ручных команд или знаний конкретного разработчика. После выкладки нужны health checks и мониторинг, а при проблеме — быстрый rollback или отключение изменения с помощью feature flag. Только после автоматизации контроля риска можно убрать manual approval. Continuous Deployment — это контроль, автоматизированный до, во время и после production deploy.</aside>
+    </section>
+
+    <section class="deployment-antipattern-slide">
+      <h2>Автоматизация ≠ отсутствие контроля</h2>
+      <div class="deployment-antipattern-layout">
+        <div class="deployment-antipattern-visual"><img src="assets/images/cat-continuous-deployment-antipattern.png" alt="Кот у компьютера со спутанными проводами"></div>
+        <div class="deployment-antipattern-message">
+          <p>Continuous Deployment — это не «оно само»</p>
+          <p>Это автоматизированный контроль<br><strong>до, во время и после deploy</strong></p>
+        </div>
+      </div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Картинка — намеренный антипример. Continuous Deployment — не случайность и не отсутствие контроля. Ручное действие заменяется проверяемым автоматизированным процессом.</aside>
+    </section>
+
+    <section class="ci-goals-hell">
+      <h2>Основные цели CI</h2>
+      <div class="ci-goals-hell-layout">
+        <div class="grid-3">
+          <div class="card"><h3>1. Быстрая обратная связь</h3><ul><li>Успешно ли собираются Docker-образы приложения</li><li>Упали ли тесты</li><li>Есть ли конфликт зависимостей</li></ul></div>
+          <div class="card active"><h3>2. Меньше integration hell</h3><ul><li>Меньше merge-конфликтов</li><li>Раньше видны несовместимые изменения</li><li>Интеграция маленькими порциями</li></ul></div>
+          <div class="card"><h3>3. Автоматизация качества</h3><ul><li>Code style</li><li>Security scanning и SAST</li><li>Coverage</li><li>Dependency checks</li></ul></div>
+        </div>
+        <img class="ci-goals-hell__visual" src="assets/images/integration-hell-overview-v4.png" alt="Конфликты, сломанный pipeline и баги при поздней интеграции">
+      </div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Возвращаемся ко второй цели CI и раскрываем integration hell подробнее.</aside>
+    </section>
+
+    <section class="statement-fill">
+      <h2>Integration hell</h2>
+      <div class="card" style="margin:40px auto;max-width:82%"><p style="font-size:.95em">Болезненное и рискованное объединение изменений, которые слишком долго разрабатывались изолированно</p></div>
+      <div class="conclusion">Чем дольше код живёт отдельно, тем дороже его интеграция</div>
+      <div class="midpoint-easter-egg">Экватор доклада пройден. Ты всё ещё здесь? Моргни два раза</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Наша цель — не научиться разбирать последствия integration hell, а не допускать его появления.</aside>
+    </section>
+
+    <section class="center merge-pain-slide">
+      <h1>Как больно,<br>когда код не сливается</h1>
+      <img class="merge-pain-cat" src="assets/images/cat-loves-his-job.png" alt="Кот с надписью «Я люблю свою работу»">
+      <div class="vm-brand-footer footer-left" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Короткая эмоциональная пауза перед разбором разных типов конфликтов.</aside>
+    </section>
+
+    <section class="content-fill conflict-types-slide">
+      <h2>Конфликты — только видимая часть</h2>
+      <div class="grid-3">
+        <div class="card"><h3>Текстовые</h3><p>Git не может автоматически объединить изменения одного участка файла</p></div>
+        <div class="card"><h3>Логические</h3><p>Код успешно объединился, но изменения несовместимы по смыслу</p></div>
+        <div class="card"><h3>Окружение и данные</h3><p>Конфликтуют миграции, зависимости, конфигурация или внешние сервисы</p></div>
+      </div>
+      <div class="conclusion">Код может слиться без merge-конфликта — и всё равно сломаться</div>
+      <div class="vm-brand-footer footer-left" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Привести примеры сигнатуры метода, API-контракта, миграции, PHP-пакета и переменной окружения.</aside>
+    </section>
+
+    <section class="content-fill conflict-strategies-slide">
+      <h2>Как команды работают с конфликтами</h2>
+      <div class="conflict-strategies-grid">
+        <div class="conflict-strategy-card"><h3>Кто последний — тот и прав</h3><p>Последнее сохранение перезаписывает предыдущее</p><p>Код на FTP без Git</p><p><strong>Риск: потеря изменений</strong></p></div>
+        <div class="conflict-strategy-card"><h3>Блокировка</h3><p>Пока один редактирует, остальные ждут</p><p>Сообщение о hotfix в чате</p><p><strong>Цена: очереди и скрытые простои</strong></p></div>
+        <div class="conflict-strategy-card conflict-strategy-card--focus"><h3>Постоянное слияние</h3><p>Небольшие изменения сразу попадают в общую версию</p><p>Google Docs и частые merge</p><p><strong>Конфликты обнаруживаются рано</strong></p></div>
+      </div>
+      <div class="conclusion">Задача CI — сделать конфликты ранними, маленькими и дешёвыми</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Google Docs — почти идеальная метафора постоянного слияния: изменения маленькие, сразу объединяются и видны всем. С кодом сложнее: он зависит от базы данных, сервисов, зависимостей и окружения, а успешное текстовое слияние ещё не означает, что система работает. Поэтому к частой интеграции добавляются сборка и автоматические проверки. Дальше — «Багопровод Романичева».</aside>
+    </section>
+
+    <section>
+      <h2>Багопровод Романичева</h2>
+      <div class="screenshot-one"><img src="assets/images/slide-33-image-01.png" style="max-height:560px"></div>
+      <div class="vm-brand-footer footer-left" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Каждый уровень проверки фильтрует свой класс ошибок. Но даже после всех фильтров абсолютной гарантии нет.</aside>
+    </section>
+
+    <section class="content-fill delivery-benefits-slide integration-approaches-slide">
+      <h2>Интеграции от Макконнелла</h2>
+      <div class="integration-source">Стив Макконнелл · «Совершенный код», 2-е издание, 2010 · Глава 29 — «Интеграция»</div>
+      <p class="subtitle integration-definition">Интеграция — объединение отдельных программных компонентов в единую систему</p>
+      <div class="grid-2 integration-approaches-grid">
+        <div class="card integration-approach-card">
+          <h3>Поэтапная интеграция</h3>
+          <p>Компоненты долго разрабатываются отдельно, а затем впервые объединяются одновременно</p>
+        </div>
+        <div class="card integration-approach-card">
+          <h3>Инкрементная интеграция</h3>
+          <p>Компоненты добавляются в работающую систему небольшими порциями и сразу проверяются</p>
+        </div>
+      </div>
+      <div class="integration-approaches-conclusion">Последовательность объединения влияет на то, насколько легко найти причину ошибки</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">
+        Макконнелл использует термин «интеграция» для операции, при которой отдельные программные компоненты объединяются в единую систему.
+
+        Интеграция тесно связана с последовательностью разработки: важно не только написать компоненты, но и решить, когда и в каком порядке соединять их друг с другом.
+
+        Здесь важно не запутаться в термине «поэтапная интеграция». В переводе книги так называется подход, при котором компоненты сначала создаются отдельно, а затем соединяются практически одновременно.
+
+        Альтернатива — инкрементная интеграция. Работающая система растёт постепенно: добавили компонент, соединили с существующей системой, проверили результат.
+
+        Внутри инкрементной интеграции Макконнелл рассматривает шесть стратегий: сверху вниз, снизу вверх, сэндвич, по рискам, по функциональности и T-образную. Нам сейчас важны не детали каждой стратегии, а общий принцип: система растёт и проверяется небольшими шагами.
+
+        В большинстве публикаций под непрерывной интеграцией понимается интеграция не реже одного раза в день. В современном процессе желательно делать это ещё чаще — по мере готовности небольших изменений.
+      </aside>
+    </section>
+
+    <section class="blast-fill big-bang-slide">
+      <h2>Интеграция большого взрыва</h2>
+      <div class="big-bang-visual">
+        <img src="assets/images/big-bang-integration-mcconnell-v2.png" alt="Интеграция большого взрыва: глобальные переменные, слабая инкапсуляция, плохо документированные интерфейсы и различные подходы к обработке ошибок">
+        <span class="big-bang-label label-error-handling">Различные подходы<br>к обработке ошибок</span>
+        <span class="big-bang-label label-encapsulation">Слабая инкапсуляция</span>
+        <span class="big-bang-label label-globals">Глобальные переменные</span>
+        <span class="big-bang-label label-interfaces">Плохо документированные<br>интерфейсы</span>
+      </div>
+      <div class="big-bang-conclusion">Когда всё соединяется впервые, под подозрением оказываются все компоненты и связи между ними</div>
+      <div class="source-note">По мотивам: Стив Макконнелл, «Совершенный код», глава 29, рис. 29-2.</div>
+      <div class="vm-brand-footer footer-left" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Макконнелл показывает не конкретные технологии, а причины, из-за которых большая интеграция становится непредсказуемой. Это глобальные переменные, слабая инкапсуляция, плохо документированные интерфейсы и разные подходы к обработке ошибок. Каждая из этих проблем отдельно уже усложняет разработку. Но при большом взрыве они впервые проявляются одновременно, поэтому мы не понимаем, где именно искать источник ошибки. Книга описывает общую архитектурную проблему. Теперь посмотрим, в каких частях современной системы эти проблемы могут проявиться.</aside>
+    </section>
+
+    <section class="blast-fill big-bang-slide big-bang-modern-slide">
+      <h2>Большой взрыв в современной системе</h2>
+      <div class="big-bang-visual big-bang-animation" aria-label="API, миграции, frontend, интеграции, зависимости и окружение объединяются в один код, после чего происходит большой взрыв">
+        <svg class="bb-flow-layer" viewBox="0 0 1440 520" aria-hidden="true">
+          <defs>
+            <marker id="bb-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0 0 L10 5 L0 10 Z"></path>
+            </marker>
+          </defs>
+          <path class="bb-flow bb-flow-api" pathLength="1" d="M330 105 C385 105 390 165 412 205"></path>
+          <path class="bb-flow bb-flow-migrations" pathLength="1" d="M330 260 C365 260 390 260 412 260"></path>
+          <path class="bb-flow bb-flow-frontend" pathLength="1" d="M330 415 C385 415 392 350 412 315"></path>
+          <path class="bb-flow bb-flow-integrations" pathLength="1" d="M760 105 C730 105 714 165 692 205"></path>
+          <path class="bb-flow bb-flow-dependencies" pathLength="1" d="M760 260 C730 260 714 260 692 260"></path>
+          <path class="bb-flow bb-flow-environment" pathLength="1" d="M760 415 C730 415 714 350 692 315"></path>
+        </svg>
+
+        <img class="bb-card bb-card-api" src="assets/images/big-bang-card-api-exact-v3-clean.png" alt="">
+        <img class="bb-card bb-card-migrations" src="assets/images/big-bang-card-migrations-exact-v3-clean.png" alt="">
+        <img class="bb-card bb-card-frontend" src="assets/images/big-bang-card-frontend-exact-v3-clean.png" alt="">
+        <img class="bb-card bb-card-integrations" src="assets/images/big-bang-card-integrations-exact-v3-clean.png" alt="">
+        <img class="bb-card bb-card-dependencies" src="assets/images/big-bang-card-dependencies-exact-v3-clean.png" alt="">
+        <img class="bb-card bb-card-environment" src="assets/images/big-bang-card-environment-exact-v3-clean.png" alt="">
+
+        <div class="bb-code-module" aria-hidden="true">
+          <div class="bb-code-bar"><i></i><i></i><i></i></div>
+          <div class="bb-code-symbol">&lt;/&gt;</div>
+          <div class="bb-code-lines"><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="bb-blast-flash" aria-hidden="true"></div>
+        <img class="bb-final-diagram" src="assets/images/big-bang-integration.png" alt="">
+        <img class="bb-cat bb-cat-conductor" src="assets/images/cat-integration-conductor-designer-eyes-v2-trimmed.png" alt="Кот жестом предлагает объединить компоненты">
+        <img class="bb-cat bb-cat-surprised" src="assets/images/cat-integration-after-explosion-designer-eyes-v3-trimmed.png" alt="Удивлённый кот после большого взрыва">
+
+        <span class="big-bang-label label-api">API</span>
+        <span class="big-bang-label label-migrations">Миграции</span>
+        <span class="big-bang-label label-frontend">Frontend</span>
+        <span class="big-bang-label label-integrations">Интеграции</span>
+        <span class="big-bang-label label-dependencies">Зависимости</span>
+        <span class="big-bang-label label-environment">Окружение</span>
+      </div>
+      <div class="big-bang-conclusion">Чем больше областей соединяются одновременно, тем труднее определить источник проблемы</div>
+      <div class="source-note">Современный пример по мотивам: Стив Макконнелл, «Совершенный код», глава 29, рис. 29-2.</div>
+      <div class="vm-brand-footer footer-left" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Сегодня система состоит из API, миграций, Frontend, внешних интеграций, зависимостей и окружения. Каждая часть может работать отдельно, но проблемы часто возникают именно при их взаимодействии. Если всё объединяется одним большим шагом, мы получаем сразу много возможных источников ошибки. Неизвестно, находится ли проблема внутри отдельного компонента или появилась на стыке между ними. Альтернатива большому взрыву — не соединять всё одновременно. При инкрементной интеграции система растёт небольшими проверяемыми шагами.</aside>
+    </section>
+
+    <section class="incremental-integration-slide">
+      <h2>Поэтапная и инкрементная интеграция</h2>
+      <div class="integration-comparison-visual">
+        <img class="comparison-image-half comparison-image-left" src="assets/images/phased-vs-incremental-integration.png" alt="Поэтапная интеграция">
+        <img class="comparison-image-half comparison-image-right" src="assets/images/phased-vs-incremental-integration.png" alt="Инкрементная интеграция">
+        <ul class="incremental-methods-list">
+          <li>сверху вниз</li>
+          <li>снизу вверх</li>
+          <li>сэндвич</li>
+          <li>по рискам</li>
+          <li>по функциональности</li>
+          <li>T-образная</li>
+        </ul>
+      </div>
+      <div class="integration-comparison-labels" aria-hidden="true">
+        <div>Поэтапная интеграция</div>
+        <div>Инкрементная интеграция</div>
+      </div>
+      <div class="incremental-conclusion">Всё объединили одновременно — под подозрением вся система<br>Добавили небольшой шаг — сначала проверяем его и место подключения</div>
+      <div class="source-note">По мотивам: Стив Макконнелл, «Совершенный код», глава 29, рис. 29-4.</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">
+        При инкрементной интеграции мы не ждём, пока будут готовы все компоненты.
+
+        Сначала создаётся небольшая работающая основа. Затем к ней добавляется один компонент или небольшая группа компонентов.
+
+        После каждого шага система проверяется.
+
+        Если появилась ошибка, круг подозреваемых значительно меньше: вероятнее всего, проблема находится в новом компоненте или в месте его соединения с существующей системой.
+
+        Это не означает, что конфликтов и ошибок больше не будет. Они просто обнаруживаются раньше и небольшими порциями.
+
+        Инкрементную интеграцию можно выполнять разными способами: двигаться сверху вниз, снизу вверх, одновременно с двух сторон, начинать с наиболее рискованных компонентов или добавлять систему по отдельным функциям.
+
+        Для нашего доклада важнее не конкретный порядок, а сам принцип: не накапливать изолированные изменения и не соединять их все одновременно.
+
+        Инкрементная интеграция уменьшает размер одного шага. Continuous Integration добавляет к этому частоту и автоматическую проверку каждого шага.
+      </aside>
+    </section>
+
+    <section class="chain-fill torcat-risk-slide">
+      <h2>Не складываем все риски в один релиз</h2>
+      <div class="torcat-risk-layout">
+        <div class="flow vertical risk-chain">
+          <div class="flow-node">Баги полностью исключить нельзя</div><div class="arrow">↓</div>
+          <div class="flow-node">Меньше изменений за один раз</div><div class="arrow">↓</div>
+          <div class="flow-node">Меньше проблем одновременно</div><div class="arrow">↓</div>
+          <div class="flow-node primary">Проще найти причину и исправить</div>
+        </div>
+        <div class="torcat-risk-visual"><img src="assets/images/schwarzekot-risk-white.png" alt="Шварцекот готов разобраться с багами"></div>
+      </div>
+      <div class="conclusion">Выпускаем изменения частями — распределяем риск во времени</div>
+      <div class="vm-brand-footer footer-left" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Как бы хорошо мы ни тестировали, некоторые баги дойдут до пользователя. Вопрос — сколько проблем он получит одновременно.</aside>
+    </section>
+
+    <section class="chain-fill value-gap-transition" data-background-color="#000072">
+      <h2>Код написан. Но пользователь его не увидел</h2>
+      <div class="value-gap-layout">
+        <div class="flow vertical risk-chain">
+          <div class="flow-node">Неделями лежит в отдельной ветке</div><div class="arrow">↓</div>
+          <div class="flow-node">Расходится с основной кодовой базой</div><div class="arrow">↓</div>
+          <div class="flow-node">Обрастает конфликтами и рисками</div>
+        </div>
+        <div class="value-gap-visual" aria-hidden="true">
+          <div class="value-gap-code"><span>&lt;/&gt;</span><small>код готов</small><em>feature/8903</em></div>
+          <div class="value-gap-route"><i></i><b>×</b></div>
+          <div class="value-gap-lab-cat"><img src="assets/images/vm-lab-cat-transparent.png" alt="Удивлённый кот-лаборант: работа сделана, но пользы пока нет"></div>
+        </div>
+      </div>
+      <div class="conclusion">Формально код готов, но ценности ещё не приносит</div>
+      <div class="vm-brand-footer footer-standard footer-inverse" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo-inverse-transparent.png" alt=""></div>
+      <aside class="notes">Код начинает приносить ценность только после интеграции, проверки и доставки пользователю.</aside>
+    </section>
+
+    <section class="content-fill webapps-case-slide webapps-growth webapps-scale-merged">
+      <h2>Команда выросла — процесс перестал масштабироваться</h2>
+      <div class="scale-merged-layout">
+        <div class="kwikbi-context-shot"><img class="kwikbi-context-full" src="assets/images/kwikbi-service-settings.png" alt="Интерфейс настройки сервиса Kwikbi"></div>
+        <div class="scale-merged-comparison">
+          <div class="card scale-merged-before">
+            <h3>При прежнем масштабе</h3>
+            <ul>
+              <li>Backend и frontend</li>
+              <li>Мало параллельных изменений</li>
+              <li>Одного тестового окружения хватало</li>
+            </ul>
+          </div>
+          <div class="card scale-merged-after">
+            <h3>После роста команды</h3>
+            <ul>
+              <li>Больше параллельных задач и MR</li>
+              <li>Разработка ускорилась</li>
+              <li>Тестовое окружение Review ещё не готово</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="conclusion">Разработка ускорилась, а тестирование стало бутылочным горлышком</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Изначально на проекте работали Женя и Сергей: backend и frontend. Backend-разработчик был один, поэтому конфликтов почти не возникало. Изменения можно было вливать по мере готовности, а одного тестового окружения хватало. Процесс не был неправильным — он соответствовал прежнему объёму работы. Затем команда и количество параллельных задач выросли. Разработка ускорилась, задач и merge request стало больше, появилось обязательное ревью. Но тестовое окружение оставалось одно. В результате узким местом стал уже не код, а возможность проверить изменения. Пришлось договариваться, кто и когда занимает стенд, и фактически вводить блокировки.</aside>
+    </section>
+
+    <section class="content-fill webapps-case-slide webapps-one-stand">
+      <h2>Один тестовый стенд — два плохих варианта</h2>
+      <div class="kwikbi-slide-logo"><img src="assets/images/kwikbi-logo.png" alt="Kwikbi"></div>
+      <div class="grid-2 case-choice-grid">
+        <div class="case-option-chain">
+          <div class="case-option-node case-option-node--title">«Чистый» develop</div>
+          <div class="case-option-arrow">↓</div>
+          <div class="case-option-node case-option-node--copy">В test деплоится одна ветка</div>
+          <div class="case-option-arrow">↓</div>
+          <strong class="case-option-result">Блокировки</strong>
+        </div>
+        <div class="case-option-chain">
+          <div class="case-option-node case-option-node--title">«Грязный» develop</div>
+          <div class="case-option-arrow">↓</div>
+          <div class="case-option-node case-option-node--copy">Протестированные и непротестированные задачи находятся вместе</div>
+          <div class="case-option-arrow">↓</div>
+          <strong class="case-option-result">Сложно отделить готовые изменения для релиза</strong>
+        </div>
+      </div>
+      <div class="conclusion">Выбор: очередь или ненадёжная общая основа</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">С одним стендом было два варианта. Первый — держать develop чистым и по очереди разворачивать отдельные ветки. Тогда тестируется одна задача, а остальные разработчики ждут. Второй — заранее сливать непротестированные задачи в develop и тестировать их вместе. Но тогда develop становился грязным: непонятно, какая задача уже проверена, что войдёт в релиз и какое изменение сломало общую версию. Review-окружения позже сняли очередь за стенд, но проблему долгой изоляции кода сами по себе не решили.</aside>
+    </section>
+
+    <section class="content-fill webapps-case-slide release-104-slide">
+      <h2>Релиз 104: накопили общий риск</h2>
+      <div class="kwikbi-slide-logo"><img src="assets/images/kwikbi-logo.png" alt="Kwikbi"></div>
+      <div class="case-metrics case-metrics--four">
+        <div class="metric-card"><strong>4+ месяца</strong><span>без релиза</span></div>
+        <div class="metric-card"><strong>43 задачи</strong><span>в одном регрессе</span></div>
+        <div class="metric-card"><strong>529 файлов</strong><span>изменено</span></div>
+        <div class="metric-card"><strong>132 дня</strong><span>самому старому изменению</span></div>
+      </div>
+      <div class="release-104-bottom">
+        <div class="release-regression release-regression--summary"><strong>Долгий, сложный регресс</strong></div>
+              <div class="feature-flag-note"><span class="case-kicker">Feature flag</span><strong>Код в production</strong><p>Интеграция Эвотор выключена</p></div>
+      </div>
+      <div class="conclusion">Feature flag помог выпустить релиз, но не сделал Эвотор готовым</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Четыре месяца не было релиза. В итоге в 104-й вошли 43 задачи и 529 изменённых файлов, а самому старому изменению было 132 дня. Регресс прошёл в два этапа: крупные замечания, исправления, повторный регресс и мелкие замечания. Выпустить релиз смогли только потому, что незавершённую интеграцию с Эвотор скрыли feature flag. Код уехал в production, но функция осталась выключенной. Это помогло не держать остальные изменения, но не сделало Эвотор готовым. После такого релиза стало понятно, что продолжать в прежнем режиме нельзя. С апреля ввели фича-стоп: команда сосредоточилась на стабилизации проекта и автоматизации повторяемых проверок.</aside>
+    </section>
+
+    <section class="content-fill webapps-case-slide feature-stop-slide">
+      <h2>Фича-стоп: автоматизировали часть регресса</h2>
+      <div class="feature-test-layout">
+        <div class="card feature-test-browser-card">
+          <div class="feature-test-shots">
+            <img src="assets/images/kwikbi-online-booking-interface.png" alt="Интерфейс онлайн-записи Kwikbi">
+          </div>
+          <h3>Dusk / Selenium</h3><p>Браузерные пользовательские сценарии</p>
+        </div>
+        <div class="feature-test-technical-stack">
+          <div class="card"><img class="feature-test-result-shot feature-test-result-shot--wide" src="assets/images/more-tests-success-summary.png" alt="Успешно завершённое тестирование webapps-api-tests: 139 тестов, 130 пройдено"><div><h3>webapps-api-tests</h3><p>Отдельный проект с API-тестами</p></div></div>
+          <div class="card"><img class="feature-test-result-shot" src="assets/images/kwikbi-test-groups-success.png" alt="Успешные Quick, Smoke и Feature Tests"><div><h3>Feature / Unit / Smoke</h3><p>Backend-логика и критичные сценарии</p></div></div>
+        </div>
+      </div>
+      <div class="conclusion">Часть ручного регресса стала повторяемыми автоматическими проверками</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">С апреля на Webapps был фича-стоп. Команда не просто чинила pipeline, а писала и расширяла тесты. Появились и были расширены Dusk и Selenium-сценарии, создан отдельный проект webapps-api-tests, добавлены Feature-, Unit- и Smoke-тесты. Эта работа не закончилась к одному конкретному релизу. Её масштаб особенно хорошо виден уже в составе 106-го релиза: из 318 изменённых файлов 173 были файлами с тестами. Это не KPI качества, а подтверждение масштаба работы. Часть повторяемых ручных проверок теперь можно выполнять автоматически. Автотесты сделали проверки повторяемыми и снизили нагрузку на ручной регресс. Но они не решили другую проблему — сильную связанность изменений. Это стало особенно заметно в 105-м релизе.</aside>
+    </section>
+
+    <section class="content-fill webapps-case-slide release-105-slide">
+      <h2>Релиз 105: одна задача скрывала ещё шесть</h2>
+      <div class="kwikbi-slide-logo"><img src="assets/images/kwikbi-logo.png" alt="Kwikbi"></div>
+      <div class="release-105-flow">
+        <div class="release-task-count"><strong>8</strong><span>продуктовых задач ожидали</span></div>
+        <div class="case-arrow">→</div>
+        <div class="release-hidden-task"><strong>1 задача</strong><span>скрывала ещё 6 технически связанных</span></div>
+        <div class="case-arrow">→</div>
+        <div class="release-task-count release-task-count--final"><strong>14</strong><span>задач в релизе получили</span></div>
+      </div>
+      <div class="release-105-facts">
+        <div class="card"><span class="case-kicker">Автотесты</span><strong>Начали писать автоматические тесты</strong></div>
+        <div class="card"><span class="case-kicker">Review-окружение</span><strong>Дало несколько параллельных потоков тестирования</strong></div>
+      </div>
+      <div class="conclusion">Отдельные задачи не стали независимыми изменениями: в релиз они всё равно должны были попасть вместе</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Изначально на доске в Bitrix24 к релизу было выделено восемь продуктовых задач. Но перед регрессом выяснилось, что одна из них реализована в одном большом merge request ещё с шестью связанными задачами. Эти задачи нельзя было оставить за пределами регресса: их код уже находился в том же MR. Поэтому QA пришлось дополнительно вручную проверить все связанные задачи, а объём релиза вырос с восьми до четырнадцати задач. Выпускать их тоже пришлось вместе. Review-окружение уже позволило тестировать изменения отдельно от общего test, но не сделало изменения независимо интегрируемыми. Отдельные карточки в Bitrix24 ещё не означают, что код действительно разделён. Теперь разберём, что должны давать продуктовая и программистская декомпозиция.</aside>
+    </section>
+
+    <section class="content-fill webapps-case-slide decomposition-slide decomposition-levels-slide">
+      <h2>Декомпозиция: два уровня</h2>
+      <div class="grid-2 decomposition-grid">
+        <div class="card"><h3>Продуктовая декомпозиция</h3><ul><li>Выделяем самостоятельные пользовательские сценарии</li><li>Каждый шаг даёт проверяемый результат для пользователя</li><li>Части можно независимо приоритизировать и выпускать в production</li></ul></div>
+        <div class="card"><h3>Программистская декомпозиция</h3><ul><li>Разные задачи — в разных MR</li><li>Каждый MR — небольшой законченный шаг</li><li>Рефакторинг старого кода — отдельно</li><li>Новый код вводится небольшими изменениями</li><li>Незавершённая функциональность скрывается feature flag</li></ul></div>
+      </div>
+      <div class="conclusion">Отдельные карточки в Bitrix24 ещё не означают независимо интегрируемый код</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Здесь важно различать два уровня декомпозиции. Продуктовая декомпозиция отвечает на вопрос: какую часть пользовательской ценности можно реализовать и выпустить отдельно? Мы выделяем самостоятельные пользовательские сценарии, каждый шаг должен давать проверяемый результат для пользователя, а части можно независимо приоритизировать и выпускать в production. И эти вопросы должен задавать не только Product Manager. Разработчики тоже должны смотреть на задачу и спрашивать: действительно ли всё это обязательно выпускать одновременно? Но одних отдельных карточек в Bitrix24 недостаточно. Если весь код находится в одном MR, который живёт несколько месяцев, продуктовая декомпозиция не помогает постоянной интеграции. Поэтому нужен второй уровень — программистская декомпозиция. Она отвечает на вопрос: как разделить реализацию на небольшие законченные изменения, которые можно раньше интегрировать в develop? Это в том числе означает разные задачи в разных merge request. Но цель не просто создать больше MR. Каждый MR должен быть небольшим законченным шагом, который можно отдельно отревьюить, интегрировать и проверить. В идеале — ещё и независимо выпустить. Если все MR всё равно приходится сливать одним пакетом, связанность осталась. Сейчас это цель, которую мы только начали внедрять, поэтому в проекте одновременно остаются задачи и со старой, и с новой декомпозицией. Но зачем разработчику прикладывать эти дополнительные усилия, если проще сделать всю задачу и слить её один раз?</aside>
+    </section>
+
+    <section class="center decomposition-question-slide decomposition-question-slide--dark" data-background-color="#000072">
+      <h2>Зачем мне эти дополнительные усилия?</h2>
+      <img class="decomposition-question-cat" src="assets/images/cat-smart.png" alt="Кот размышляет, стоит ли прикладывать дополнительные усилия">
+      <div class="vm-brand-footer footer-standard footer-inverse" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo-inverse-transparent.png" alt=""></div>
+      <aside class="notes">Вот здесь обычно и появляется сопротивление. Я взял фичу, сделал её целиком, слил — я молодец. А теперь мне предлагают заранее думать о декомпозиции, сохранять старое поведение, отдельно сливать рефакторинг и постепенно подключать новый код. Возникает логичный вопрос: зачем мне вся эта дополнительная работа?</aside>
+    </section>
+
+    <section class="content-fill webapps-case-slide decomposition-effort-slide">
+      <h2>Задача на месяц — не MR на месяц</h2>
+      <div class="decomposition-flow decomposition-flow--primary"><span>Рефакторинг старого кода</span><i class="arrow" aria-hidden="true">→</i><span>Новый код рядом со старым</span><i class="arrow" aria-hidden="true">→</i><span>Расширение функциональности</span><i class="arrow" aria-hidden="true">→</i><span>Включение feature flag</span></div>
+      <div class="grid-3 decomposition-benefits">
+        <div class="card"><h3>Старое поведение</h3><p>Продолжает работать</p></div>
+        <div class="card"><h3>Каждый шаг</h3><p>Отдельно попадает в develop</p></div>
+        <div class="card"><h3>Риски</h3><p>Распределяются между небольшими изменениями</p></div>
+      </div>
+      <div class="conclusion">Большая задача может выполняться месяц. Её код не должен месяц жить в одном MR</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Для разработчика естественно думать: я взял фичу, месяц её делал, закончил, слил — я молодец.
+
+А при постоянной интеграции появляется дополнительная мыслительная работа. Нужно заранее решить, как разделить изменение, как оставить работающим старое поведение и как постепенно подключать новое.
+
+Кажется, что проще целиком сделать всю задачу и один раз слить её в конце.
+
+Но интеграционная работа от этого не исчезает. Мы просто откладываем её на самый дорогой момент.
+
+К этому времени изменений уже много, MR сложно ревьюить, часть контекста потеряна, а конфликтовать и ломаться может всё сразу.
+
+Поэтому сначала можно отдельно провести необходимый рефакторинг старого кода и слить его.
+
+Затем небольшим шагом добавить новый код рядом со старым. При этом старое поведение продолжает работать.
+
+Следующим шагом расширить функциональность.
+
+Незавершённое поведение при необходимости скрыть feature flag, а включить его тогда, когда функциональность будет готова.
+
+Каждый законченный шаг отдельно попадает в develop, общая система остаётся стабильной, а разработчик переходит к следующей части задачи.
+
+Мы не создаём новые риски и не добавляем интеграционную работу. Мы переносим её с одного большого и рискованного момента на несколько небольших и контролируемых шагов.
+
+Цель не в количестве MR. Цель — как можно раньше сливать в develop безопасные законченные части и не складывать все риски в один большой merge.
+
+Большая задача действительно может выполняться месяц. Но её код не должен весь этот месяц жить отдельно от общей версии.
+
+Мы начали улучшать тестирование, добавили review-окружения, начали вводить новую декомпозицию и стали выпускать релизы чаще. Теперь посмотрим, стал ли код внутри этих релизов действительно свежее.</aside>
+    </section>
+
+    <section class="content-fill webapps-case-slide release-cadence-slide">
+      <h2>Релизы стали выходить чаще. А код — свежее?</h2>
+      <div class="kwikbi-slide-logo"><img src="assets/images/kwikbi-logo.png" alt="Kwikbi"></div>
+      <table class="release-matrix">
+        <thead><tr><th>Релиз</th><th>104</th><th>105</th><th>106</th><th class="release-contrast">107</th><th>108</th><th>109</th></tr></thead>
+        <tbody>
+          <tr><th>Дата</th><td>16.04</td><td>01.06</td><td>15.06</td><td class="release-contrast">07.07</td><td>20.07</td><td>03.08</td></tr>
+          <tr><th>Интервал между релизами</th><td>4+ месяца</td><td>46 дней</td><td>14 дней</td><td class="release-contrast">22 дня</td><td>13 дней</td><td>14 дней</td></tr>
+          <tr><th>Возраст самого старого коммита</th><td>132 дня</td><td>94 дня</td><td>24 дня</td><td class="release-contrast"><strong>102 дня</strong></td><td>27 дней</td><td>47 дней</td></tr>
+        </tbody>
+      </table>
+      <div class="conclusion">Частые релизы сами по себе не гарантируют частую интеграцию</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Цель была выпускать Kwikbi раз в две-три недели, не ставить релиз в один день с Vetmanager и встроить регресс Kwikbi в график QA. По календарю мы приблизились к этому ритму: после четырёх месяцев паузы интервалы составили 46, 14, 22, 13 и 14 дней. Но вторая строка показывает другое: в 107-й релиз, вышедший примерно через три недели, попал коммит возрастом 102 дня. Это не точное время жизни MR, а время от авторской даты самого старого коммита до релиза. В 109-м релизе возраст самого старого коммита составил 47 дней. Значит, одного релизного календаря недостаточно: нужно, чтобы сам код не жил отдельно месяцами.</aside>
+    </section>
+
+    <section class="content-fill ci-state-transition-slide">
+      <h2>Пайплайн завершился успешно</h2>
+      <img src="assets/images/ci-developer-state-uncovered.png" alt="Уставший разработчик рядом с зелёным статусом OK">
+      <div class="conclusion">Состояние разработчика проверками не покрыто</div>
+      <div class="vm-brand-footer footer-left" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">Зелёная галочка — не самоцель. Хороший CI должен не только формально завершаться успешно, но и делать работу разработчика спокойнее, а поставку изменений — предсказуемее. Поэтому в завершение соберём практическую пользу CI для разработчика и бизнеса.</aside>
+    </section>
+
+    <section class="content-fill ci-summary-slide ci-summary-slide--single ci-summary-slide--developer">
+      <h2>Что в итоге даёт постоянная интеграция?</h2>
+      <div class="ci-summary-grid">
+        <div class="card ci-summary-card ci-summary-card--developer">
+          <div class="ci-summary-copy">
+            <h3>Разработчику</h3>
+            <ul>
+              <li>Быстрая обратная связь, пока контекст задачи не потерян</li>
+              <li>Ошибки обнаруживаются через часы, а не недели</li>
+              <li>Причину ошибки проще найти и исправить</li>
+              <li>Меньше конфликтов и болезненных merge</li>
+              <li>Проще и быстрее code review</li>
+              <li>CI выявляет слишком сильную связанность архитектуры</li>
+              <li>Меньше авралов перед релизом</li>
+              <li>Основная ветка остаётся надёжной основой</li>
+              <li>Меньше ручных инструкций и «магических» знаний</li>
+              <li>Спокойнее переключаться на следующую задачу — или уходить в отпуск</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <img class="ci-summary-scene" src="assets/images/ci-summary-developer-cutout.png" alt="Разработчик за ноутбуком">
+      <div class="conclusion">CI — не дополнительный контроль, а способ исправлять проблемы, пока они маленькие</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">
+        Главный получатель пользы CI — разработчик. Бизнес-эффект появляется как следствие устойчивого инженерного процесса.
+
+        Благодаря частой интеграции ошибки обнаруживаются через часы, а не недели. Причину проще найти, пока изменение небольшое и контекст задачи ещё не потерян.
+
+        Небольшой change set быстрее понять, проверить и безопасно принять, поэтому code review становится проще и быстрее.
+
+        CI показывает и архитектурные проблемы: если небольшое изменение невозможно независимо проверить и интегрировать, это может быть сигналом слишком сильной связанности системы.
+
+        Автоматические проверки уменьшают количество ручных инструкций и знаний, которые существуют только в голове одного человека. Pipeline не уходит в отпуск и не забывает третий пункт инструкции. Поэтому разработчику спокойнее завершать один шаг, переключаться на следующий — и самому уходить в отпуск.
+
+        Задачи не пишутся в стол: небольшой законченный результат быстро соединяется с общей версией, проверяется и продолжает путь к пользователю.
+      </aside>
+    </section>
+
+    <section class="content-fill ci-summary-slide ci-summary-slide--single ci-summary-slide--business">
+      <h2>Что в итоге даёт постоянная интеграция?</h2>
+      <div class="ci-summary-grid">
+        <div class="card ci-summary-card ci-summary-card--business">
+          <div class="ci-summary-copy">
+            <h3>Бизнесу</h3>
+            <ul>
+              <li>Релизы становятся предсказуемее</li>
+              <li>Ниже риск и стоимость ошибки</li>
+              <li>Стабильнее продукт</li>
+              <li>Снижается пиковая нагрузка на QA перед релизом</li>
+              <li>Быстрее вводить в проект новых разработчиков</li>
+              <li>Изменения быстрее доходят до пользователей</li>
+              <li>Быстрее проверяются продуктовые гипотезы</li>
+              <li>Релиз не зависит от знаний одного конкретного сотрудника</li>
+              <li>Проще управлять приоритетами</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <img class="ci-summary-scene" src="assets/images/ci-summary-business-cutout.png" alt="Бизнес, выращивающий ценность">
+      <div class="conclusion">Бизнес-эффект появляется как следствие устойчивого инженерного процесса</div>
+      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
+      <aside class="notes">
+        Для бизнеса это означает более предсказуемые релизы, меньшую стоимость ошибки и стабильный продукт. Поскольку проблемы обнаруживаются небольшими порциями раньше, перед релизом на QA не обрушивается весь объём рисков одновременно.
+
+        Новым разработчикам проще входить в проект: pipeline показывает обязательные проверки и правила процесса на практике.
+
+        Небольшое изменение раньше доходит до пользователей и раньше даёт обратную связь, поэтому продуктовые гипотезы проверяются быстрее. Готовые изменения можно выпускать по необходимости, не ожидая одного большого общего релиза.
+
+        Воспроизводимый pipeline также снижает зависимость от конкретных сотрудников: релиз не должен становиться невозможным только потому, что нужного человека сегодня нет.
+
+        CI — не дополнительный контроль над разработчиком. Это способ обнаруживать и исправлять проблемы, пока они ещё маленькие.
+      </aside>
+    </section>
+
+    <section class="books-thanks-slide" data-background-color="#0069b4">
+      <h2>Источники и благодарности</h2>
+      <div class="books-thanks-layout">
+        <div class="books-list">
+          <h3>Литература</h3>
+          <div class="book-entry"><strong>Стив Макконнелл</strong><br>«Совершенный код. Мастер-класс», 2-е издание, 2010<br><span>Глава 29 — «Интеграция»</span></div>
+          <div class="book-entry"><strong>Кент Бек</strong><br>«Экстремальное программирование», 2002<br><span>Глава 16 — «Стратегия разработки»</span></div>
+          <img class="books-cat" src="assets/images/cat-on-books-transparent.png" alt="Кот на книгах">
+        </div>
+        <div class="thanks-card">
+          <h3>Отдельное спасибо</h3>
+          <div class="thanks-list">
+            <div class="thanks-row"><strong>CVO</strong> — за создание «Багопровода»</div>
+            <div class="thanks-row"><strong>UI|UX &amp; Graphic designer</strong> — за шаблон презентации и котов, которые помогают проще объяснять сложные инженерные процессы</div>
+            <div class="thanks-row"><strong>CTO</strong> — за фича-стоп, который помог команде сосредоточиться на налаживании важных процессов</div>
+            <div class="thanks-row"><strong>PM</strong> — за новый подход к декомпозиции, который мы понемногу внедряем в процесс</div>
+            <div class="thanks-row"><strong>Команде Laravel</strong> — за активную работу над изменениями процесса, тысячи новых тестов, готовность разбирать сложные места, дробить изменения и постоянно улучшать инженерные практики</div>
+            <div class="thanks-row"><strong>Команде QA</strong> — за успешно внедренный новый график регрессов и готовность выдержать дополнительную нагрузку</div>
+            <div class="thanks-row thanks-row--listener"><strong>И отдельно — тебе</strong> — за внимание и за то, что удалось не уснуть где-то между CI и CD и добраться до этой строчки</div>
+          </div>
+        </div>
+      </div>
+      <div class="vm-brand-footer footer-standard footer-inverse" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo-inverse-transparent.png" alt=""></div>
+      <aside class="notes">Коротко назвать книги, на которые я опиралась, и поблагодарить людей и команды, благодаря которым этот доклад и изменения процесса стали возможны. Отдельно подчеркнуть вклад Laravel в тесты и изменения процесса, а QA — в новый график регрессов и работу с возросшей нагрузкой.</aside>
+    </section>
+
+    <section class="question-slide question-slide--heart" data-background-color="#0069b4">
+      <div class="question-copy"><div class="question-title">Вопросы?</div><p>Спасибо за внимание!</p></div>
+      <img class="question-heart-cat" src="assets/images/cat-in-heart.png" alt="Кот в сердце">
+      <aside class="notes">Поблагодарить аудиторию и перейти к вопросам.</aside>
+    </section>
+  </div>
+</div>
+<script src="vendor/reveal/reveal.js"></script>
+<script src="vendor/notes/notes.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1600,
+    height: 900,
+    margin: 0.02,
+    hash: true,
+    controls: true,
+    progress: true,
+    center: false,
+    transition: 'slide',
+    backgroundTransition: 'fade',
+    plugins: [ RevealNotes ]
+  }).then(() => {
+    const pathSlide = document.querySelector('.dark-path');
+    const definitionSlide = document.querySelector('.definition-slide');
+    const bigBangSlide = document.querySelector('.big-bang-modern-slide');
+    const bigBangStage = new URLSearchParams(window.location.search).get('bb-stage');
+    const showFinalPathState = new URLSearchParams(window.location.search).has('preview');
+    const pathFragments = [...pathSlide.querySelectorAll('.fragment')];
+    const ciFlowStages = [...pathSlide.querySelectorAll('.ci-flow-stage')];
+    const ciFlowArrows = [...pathSlide.querySelectorAll('.ci-flow-arrow')];
+    const pathTimeline = [
+      [0, 300], [1, 850], [2, 1250], [3, 1900], [4, 2250], [5, 2900], [6, 3250],
+      [7, 4050], [8, 6500], [9, 6900], [10, 7550], [11, 7950], [12, 8650]
+    ];
+    const ciTimeline = [4450, 4800, 5150, 5500, 5850];
+    let pathTimers = [];
+
+    const stopPathAnimation = () => {
+      pathTimers.forEach(clearTimeout);
+      pathTimers = [];
+    };
+
+    const playPathAnimation = () => {
+      stopPathAnimation();
+      if (Reveal.getCurrentSlide() !== pathSlide) return;
+
+      pathFragments.forEach((fragment) => {
+        fragment.classList.remove('visible', 'current-fragment', 'path-revealed');
+      });
+      ciFlowStages.forEach((stage) => stage.classList.remove('ci-flow-visible', 'ci-flow-current'));
+      ciFlowArrows.forEach((arrow) => arrow.classList.remove('ci-flow-visible'));
+
+      pathTimeline.forEach(([step, delay]) => {
+        pathTimers.push(setTimeout(() => {
+          if (Reveal.getCurrentSlide() === pathSlide) {
+            pathFragments.forEach((fragment) => {
+              const fragmentIndex = Number(fragment.dataset.fragmentIndex);
+              const isRevealed = fragmentIndex <= step;
+              fragment.classList.toggle('visible', isRevealed);
+              fragment.classList.toggle('path-revealed', isRevealed);
+              fragment.classList.toggle('current-fragment', fragmentIndex === step);
+            });
+          }
+        }, showFinalPathState ? 0 : delay));
+      });
+
+      ciTimeline.forEach((delay, stageIndex) => {
+        pathTimers.push(setTimeout(() => {
+          if (Reveal.getCurrentSlide() !== pathSlide) return;
+          ciFlowStages.forEach((stage, index) => {
+            stage.classList.toggle('ci-flow-visible', index <= stageIndex);
+            stage.classList.toggle('ci-flow-current', index === stageIndex);
+          });
+          ciFlowArrows.forEach((arrow, index) => {
+            arrow.classList.toggle('ci-flow-visible', index < stageIndex);
+          });
+        }, showFinalPathState ? 0 : delay));
+      });
+    };
+
+    const playBigBangAnimation = () => {
+      if (!bigBangSlide) return;
+      bigBangSlide.classList.remove('bb-playing');
+      bigBangSlide.classList.remove('bb-stage-initial', 'bb-stage-converging', 'bb-stage-code', 'bb-stage-blast', 'bb-stage-final');
+      if (Reveal.getCurrentSlide() !== bigBangSlide) return;
+      if (bigBangStage) {
+        bigBangSlide.classList.add(`bb-stage-${bigBangStage}`);
+        return;
+      }
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (Reveal.getCurrentSlide() === bigBangSlide) {
+            bigBangSlide.classList.add('bb-playing');
+          }
+        });
+      });
+    };
+
+    const leaveFragmentSlideBackwards = (event) => {
+      const currentSlide = Reveal.getCurrentSlide();
+      if (currentSlide !== pathSlide && currentSlide !== definitionSlide) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (currentSlide === pathSlide) stopPathAnimation();
+      const { h } = Reveal.getIndices();
+      Reveal.slide(Math.max(0, h - 1), 0);
+    };
+
+    const leavePathSlideForwards = (event) => {
+      if (Reveal.getCurrentSlide() !== pathSlide) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      stopPathAnimation();
+      const { h } = Reveal.getIndices();
+      Reveal.slide(h + 1, 0);
+    };
+
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('.navigate-left')) {
+        leaveFragmentSlideBackwards(event);
+      } else if (event.target.closest('.navigate-right')) {
+        leavePathSlideForwards(event);
+      }
+    }, true);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        leaveFragmentSlideBackwards(event);
+      } else if (event.key === 'ArrowRight') {
+        leavePathSlideForwards(event);
+      }
+    }, true);
+
+    Reveal.on('slidechanged', playPathAnimation);
+    Reveal.on('slidechanged', playBigBangAnimation);
+    playPathAnimation();
+    playBigBangAnimation();
+  });
+</script>
+</body>
+</html>
