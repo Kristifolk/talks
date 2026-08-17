@@ -71,13 +71,6 @@
       <aside class="notes">CI — это практика частого объединения небольших изменений и их автоматической проверки. Continuous Delivery означает, что система постоянно готова к выпуску, но production deploy запускает человек. В Continuous Deployment успешно проверенное изменение выкладывается автоматически. Основной акцент первой части доклада — Continuous Integration.</aside>
     </section>
 
-    <section>
-      <h2>Типичный pipeline</h2>
-      <div class="screenshot-one"><img src="assets/images/slide-06-image-01.png" alt="Pipeline"></div>
-      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">На реальном pipeline показать параллельные этапы. Подчеркнуть: pipeline — инструмент CI, но не вся практика.</aside>
-    </section>
-
     <section class="goals-slide">
       <h2>Основные цели CI</h2>
       <div class="goals-layout">
@@ -101,26 +94,27 @@
       <aside class="notes">Первая практика — небольшие изменения. Чем меньше change set, тем проще понять причину проблемы.</aside>
     </section>
 
-    <section class="small-change-criteria-slide">
-      <h2>Что значит небольшое изменение?</h2>
-      <p class="subtitle">Не количество строк, а свойства изменения</p>
-      <div class="small-change-criteria">
-        <div class="small-change-criterion"><span>1</span><strong>Одна понятная цель</strong></div>
-        <div class="small-change-criterion"><span>2</span><strong>Легко понять и проверить</strong></div>
-        <div class="small-change-criterion"><span>3</span><strong>Можно безопасно интегрировать</strong></div>
-        <div class="small-change-criterion"><span>4</span><strong>После интеграции система работает</strong></div>
-        <div class="small-change-criterion"><span>5</span><strong>Причину ошибки легко найти</strong></div>
-        <div class="small-change-criterion"><span>6</span><strong>Изменение можно быстро откатить</strong></div>
+    <section class="small-change-criteria-slide small-change-example-slide">
+      <h2>Маленькие коммиты</h2>
+      <p class="subtitle">Чем меньше change set, тем легче локализовать проблему</p>
+      <div class="small-change-example-layout">
+        <div class="small-change-criteria">
+          <div class="small-change-criterion"><span>1</span><strong>Одна понятная цель</strong></div>
+          <div class="small-change-criterion"><span>2</span><strong>Безопасно интегрировать или откатить</strong></div>
+          <div class="small-change-criterion"><span>3</span><strong>Легко найти причину ошибки</strong></div>
+        </div>
+        <div class="small-change-evidence-card" aria-label="Пример большого изменения в проекте Webapps: 90 файлов и 5 896 изменённых строк">
+          <div class="small-change-evidence-stats">
+            <span class="example-project-chip">Webapps</span>
+            <div><strong>90</strong><span>файлов</span></div>
+            <div><strong>4 777</strong><span>добавлений</span></div>
+            <div><strong>1 119</strong><span>удалений</span></div>
+            <div class="small-change-evidence-total"><strong>5 896</strong><span>изменённых строк</span></div>
+          </div>
+        </div>
       </div>
       <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Универсального числа строк нет. В книгах «Совершенный код» и «Экстремальное программирование» размер определяется не количеством строк, а свойствами изменения. А теперь посмотрим на исторические примеры, в которых почти все эти признаки нарушены.</aside>
-    </section>
-
-    <section>
-      <h2>Маленькие коммиты</h2><p class="subtitle">Чем меньше change set, тем легче локализовать проблему</p>
-      <div class="screenshots"><img src="assets/images/slide-09-image-01.png"><img src="assets/images/slide-09-image-02.png"></div>
-      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">На примерах показать, как тысячи строк и десятки файлов превращают одну задачу в набор связанных рисков.</aside>
+      <aside class="notes">Универсального числа строк нет. Размер определяется свойствами изменения: у него одна понятная цель, его можно безопасно интегрировать или откатить, а причину ошибки легко найти. Справа — реальный пример из Webapps: 90 файлов и 5 896 изменённых строк в одном MR. Тысячи строк и десятки файлов превращают одну задачу в набор связанных рисков.</aside>
     </section>
 
     <section class="practice-overview">
@@ -132,11 +126,19 @@
       <aside class="notes">Следующая практика — не держать feature-ветки неделями.</aside>
     </section>
 
-    <section>
+    <section class="frequent-merge-example-slide">
       <h2>Частые merge</h2><p class="subtitle">Feature branches не должны жить неделями</p>
-      <div class="screenshots"><img src="assets/images/slide-11-image-01.png"><img src="assets/images/slide-11-image-02.png"></div>
+      <div class="merge-story-card" aria-label="От первого коммита 30 марта 2026 до merge 22 июня 2026 прошло 84 дня">
+        <span class="example-project-chip">Webapps</span>
+        <div class="merge-lifetime-facts">
+          <div><span>Первый коммит</span><strong>30 марта 2026</strong></div>
+          <div class="merge-lifetime-duration"><span>Время жизни</span><strong>84 дня</strong></div>
+          <div><span>Merge</span><strong>22 июня 2026</strong></div>
+        </div>
+      </div>
+      <p class="merge-story-conclusion">Почти 3 месяца между началом работы и вливанием в <span>develop</span></p>
       <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Показать реальный возраст MR. За месяцы основная ветка и feature-ветка успевают сильно разойтись.</aside>
+      <aside class="notes">На примере показать MR, который жил 84 дня. За это время основная ветка и feature-ветка успевают сильно разойтись: разработчик либо постоянно вливает develop, либо позже долго решает конфликты.</aside>
     </section>
 
     <section class="practice-overview">
@@ -150,9 +152,9 @@
 
     <section>
       <h2>Fast feedback</h2><p class="subtitle">CI должен быстро возвращать результат: в идеале — менее чем за 10 минут</p>
-      <div class="screenshots"><img src="assets/images/slide-13-image-01.png"><img src="assets/images/slide-13-image-02.png"></div>
+      <div class="screenshots fast-feedback-screenshots"><img src="assets/images/fast-feedback-pipeline.png" alt="Параллельные этапы pipeline: тесты, codecheck и build"><img src="assets/images/fast-feedback-tests-summary.png" alt="1239 тестов завершены без ошибок за 5 минут 4 секунды"></div>
       <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">На примере показать параллельное выполнение build, codecheck и тестов. Ждём не сумму этапов, а самый длинный путь.</aside>
+      <aside class="notes">Слева — параллельное выполнение build, codecheck и четырёх групп тестов. Справа — итог: 1 239 тестов, без ошибок, за 5 минут 4 секунды. Ждём не сумму этапов, а самый длинный путь. Пока контекст задачи не потерян, разработчик уже понимает: можно продолжать или нужно исправлять изменение.</aside>
     </section>
 
     <section class="practice-overview">
@@ -200,107 +202,8 @@
 
         Поэтому CI — это не pipeline, который запускается после окончания большой задачи. Это часть определения того, что задача действительно закончена.
 
-        Мы получили рабочий ритм CI: небольшое изменение интегрировано, проверено, основная версия снова в green. Теперь следующий вопрос — достаточно ли этого, чтобы текущую версию можно было выпустить в production?
+        Мы получили рабочий ритм CI: небольшое изменение интегрировано, проверено, основная версия снова в green. Теперь посмотрим, что происходит, когда код слишком долго живёт отдельно и интеграцию откладывают.
       </aside>
-    </section>
-
-    <section class="definition-slide definition-slide--delivery-focus">
-      <h2>Из чего состоит CI/CD</h2>
-      <div class="definition-grid">
-        <div class="definition-card"><h3>Continuous<br>Integration</h3><p>Практика частого объединения небольших изменений с общей кодовой базой и их автоматической проверки</p></div>
-        <div class="definition-card definition-card--current"><h3>Continuous<br>Delivery</h3><p>Система всегда готова к релизу, выкладка в production запускается вручную</p></div>
-        <div class="definition-card"><h3>Continuous<br>Deployment</h3><p>Каждое успешно проверенное изменение автоматически выкладывается в production</p></div>
-      </div><div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Переходим от интеграции к готовности системы к выпуску.</aside>
-    </section>
-
-    <section class="delivery-slide">
-      <h2>Delivery vs Deployment</h2>
-      <div class="delivery-compare">
-        <div class="card delivery-option delivery-option--manual"><h3>Continuous Delivery</h3></div>
-        <div class="card delivery-option delivery-option--automatic"><h3>Continuous Deployment</h3></div>
-        <svg class="delivery-arrows" viewBox="0 0 1000 550" preserveAspectRatio="none" aria-hidden="true">
-          <defs><marker id="delivery-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z"></path></marker></defs>
-          <path d="M250 205 L475 442"></path>
-          <path d="M750 205 L525 442"></path>
-        </svg>
-        <img class="delivery-cat" src="assets/images/cat-on-keyboard-transparent.png" alt="Кот стоит на клавиатуре">
-        <img class="delivery-automation" src="assets/images/love-is-continuous-deployment.png" alt="Три успешные проверки и автоматический deploy">
-        <div class="delivery-action delivery-action--manual">Manual approval</div>
-        <div class="delivery-action delivery-action--automatic">Automatic</div>
-        <div class="delivery-target"><strong>Deploy to production</strong></div>
-      </div>
-      <div class="conclusion">Каждое изменение потенциально готово к production</div>
-      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Разница одна, но принципиальная: в Delivery решение о production deploy принимает человек, в Deployment — система.</aside>
-    </section>
-
-    <section class="content-fill ci-levels-slide">
-      <h2>CI и Continuous Delivery — разные уровни готовности</h2>
-      <div class="ci-levels-layout">
-        <div class="ci-levels-cards">
-          <div class="card active"><h3>Continuous Integration</h3><div class="step-list"><span>Небольшие изменения</span><b>↓</b><span>Частая интеграция</span><b>↓</b><span>Автоматические Build и Tests</span><b>↓</b><span>Ошибки исправляются сразу</span><b>↓</b><span>Основная ветка остаётся рабочей</span></div></div>
-          <div class="card"><h3>Continuous Delivery</h3><div class="step-list"><span>Версия технически готова</span><b>↓</b><span>Её можно выпустить в production по запросу</span></div></div>
-        </div>
-        <div class="ci-levels-visual"><img src="assets/images/continuous-integration-green-pipeline-cat.png" alt="Успешный pipeline Continuous Integration"></div>
-      </div>
-      <div class="conclusion">Работающий CI — необходимая основа, но ещё не гарантия Continuous Delivery</div>
-      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">CI — постоянный процесс интеграции, а не состояние после разбора большого merge. Delivery добавляет готовность к выпуску.</aside>
-    </section>
-
-    <section class="content-fill delivery-benefits-slide">
-      <h2>Зачем нужен Continuous Delivery</h2><p class="subtitle">Готовность к релизу по запросу</p>
-      <div class="grid-2">
-        <div class="card"><h3>Техническая готовность</h3><p>Текущую версию можно выпустить без отдельной длительной стабилизации</p></div>
-        <div class="card"><h3>Ручной выбор момента</h3><p>Частота релизов — решение команды</p></div>
-      </div>
-      <div class="conclusion">Постоянная готовность к production — свойство процесса</div>
-      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Delivery не требует ежедневных релизов. Важно, могла ли команда безопасно выпустить текущую версию раньше.</aside>
-    </section>
-
-    <section class="content-fill qa-readiness-slide">
-      <h2>QA: подтверждает или создаёт готовность?</h2>
-      <div class="grid-2">
-        <div class="card good"><h3>✓ Continuous Delivery есть</h3><div class="step-list"><span>Green pipeline</span><b>↓</b><span>Версия технически готова</span><b>↓</b><span>регресс</span><span>QA подтверждают качество и снижают остаточный риск</span></div><p class="card-verdict"><span>Готовность достигнута до QA</span></p></div>
-        <div class="card bad"><h3>✕ Continuous Delivery нет</h3><div class="step-list"><span>Green pipeline</span><b>↓</b><span>QA выявляет критические ошибки</span><b>↓</b><span>Исправления и длительная стабилизация</span><b>↓</b><span>Версия становится готовой</span></div><p class="card-verdict card-verdict--sequence"><span>Готовность создаётся только после QA</span><b>↓</b><span>Дополнительная нагрузка на QA</span></p></div>
-      </div><div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Ручное QA не противоречит Delivery. Вопрос в том, подтверждает QA готовность или только создаёт её через исправления.</aside>
-    </section>
-
-    <section class="deployment-visual-transition">
-      <h2>Continuous Deployment</h2>
-      <p>Автоматически — не значит бесконтрольно</p>
-      <img src="assets/images/continuous-deployment-controlled-automatic-deploy.png" alt="Контролируемый автоматический deploy: проверки, выкладка, мониторинг и rollback">
-      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Continuous Delivery означает, что версия технически готова, но решение о production deploy принимает человек. Чтобы перейти к Continuous Deployment, недостаточно просто удалить кнопку ручного подтверждения. Автоматический deploy безопасен не потому, что мы убрали человека, а потому, что заменили ручной approval автоматизированными проверками и контролем. Поэтому автоматически — не значит бесконтрольно.</aside>
-    </section>
-
-    <section class="compact-title deployment-fill">
-      <h2>Continuous Deployment: что нужно для автоматического deploy</h2>
-      <p class="subtitle">Green pipeline должен быть достаточным основанием для выпуска</p>
-      <div class="flow">
-        <div class="flow-node"><strong>До deploy</strong><br>Надёжные автоматические проверки критичных сценариев</div><div class="arrow">→</div>
-        <div class="flow-node primary"><strong>Production deploy</strong><br>Воспроизводимая автоматическая выкладка</div><div class="arrow">→</div>
-        <div class="flow-node"><strong>После deploy</strong><br>Health checks и мониторинг<br>Быстрый rollback при проблеме</div>
-      </div>
-      <div class="conclusion">Убираем ручной approval только после автоматизации контроля риска</div>
-      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Green pipeline должен стать достаточным основанием для безопасной выкладки. До deploy автоматически проверяются критичные пользовательские сценарии, зависимости, конфигурация и другие существенные риски. Если после green pipeline всё ещё обязателен ручной регресс, без которого неизвестно, работает ли приложение, автоматически выкладывать такую версию нельзя. Сам production deploy должен быть воспроизводимым и не зависеть от ручных команд или знаний конкретного разработчика. После выкладки нужны health checks и мониторинг, а при проблеме — быстрый rollback или отключение изменения с помощью feature flag. Только после автоматизации контроля риска можно убрать manual approval. Continuous Deployment — это контроль, автоматизированный до, во время и после production deploy.</aside>
-    </section>
-
-    <section class="deployment-antipattern-slide">
-      <h2>Автоматизация ≠ отсутствие контроля</h2>
-      <div class="deployment-antipattern-layout">
-        <div class="deployment-antipattern-visual"><img src="assets/images/cat-continuous-deployment-antipattern.png" alt="Кот у компьютера со спутанными проводами"></div>
-        <div class="deployment-antipattern-message">
-          <p>Continuous Deployment — это не «оно само»</p>
-          <p>Это автоматизированный контроль<br><strong>до, во время и после deploy</strong></p>
-        </div>
-      </div>
-      <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Картинка — намеренный антипример. Continuous Deployment — не случайность и не отсутствие контроля. Ручное действие заменяется проверяемым автоматизированным процессом.</aside>
     </section>
 
     <section class="ci-goals-hell">
@@ -321,7 +224,6 @@
       <h2>Integration hell</h2>
       <div class="card" style="margin:40px auto;max-width:82%"><p style="font-size:.95em">Болезненное и рискованное объединение изменений, которые слишком долго разрабатывались изолированно</p></div>
       <div class="conclusion">Чем дольше код живёт отдельно, тем дороже его интеграция</div>
-      <div class="midpoint-easter-egg">Экватор доклада пройден. Ты всё ещё здесь? Моргни два раза</div>
       <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
       <aside class="notes">Наша цель — не научиться разбирать последствия integration hell, а не допускать его появления.</aside>
     </section>
@@ -510,6 +412,7 @@
         <div class="torcat-risk-visual"><img src="assets/images/schwarzekot-risk-white.png" alt="Шварцекот готов разобраться с багами"></div>
       </div>
       <div class="conclusion">Выпускаем изменения частями — распределяем риск во времени</div>
+      <div class="midpoint-easter-egg">Экватор доклада пройден. Ты всё ещё здесь? Моргни два раза</div>
       <div class="vm-brand-footer footer-left" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
       <aside class="notes">Как бы хорошо мы ни тестировали, некоторые баги дойдут до пользователя. Вопрос — сколько проблем он получит одновременно.</aside>
     </section>
@@ -586,12 +489,33 @@
     </section>
 
     <section class="content-fill webapps-case-slide release-104-slide">
+      <svg class="release-104-hero-flow" viewBox="0 0 1920 650" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <filter id="release-104-flow-blur" x="-20%" y="-40%" width="140%" height="180%">
+            <feGaussianBlur stdDeviation="22"></feGaussianBlur>
+          </filter>
+        </defs>
+        <path class="release-104-flow-shadow" d="M120 420 C350 295 520 390 730 285 C910 195 1015 190 1145 238 C1230 268 1285 230 1345 196 C1495 112 1600 88 1690 64"></path>
+        <path class="release-104-flow-line" d="M120 420 C350 295 520 390 730 285 C910 195 1015 190 1145 238 C1230 268 1285 230 1345 196 C1495 112 1600 88 1690 64"></path>
+        <circle class="release-104-flow-bubble release-104-flow-bubble--two" cx="1285" cy="230" r="14"></circle>
+        <circle class="release-104-flow-bubble release-104-flow-bubble--three" cx="1480" cy="148" r="8"></circle>
+      </svg>
+      <svg class="release-104-gap-flow" viewBox="0 0 320 86" preserveAspectRatio="none" aria-hidden="true">
+        <path class="release-104-gap-flow-shadow" d="M-8 104 C32 68 72 39 118 61 C164 82 218 60 260 35 C287 19 305 2 320 -10"></path>
+        <path class="release-104-gap-flow-line" d="M-8 104 C32 68 72 39 118 61 C164 82 218 60 260 35 C287 19 305 2 320 -10"></path>
+      </svg>
       <h2>Релиз 104: накопили общий риск</h2>
+      <span class="release-title-danger" aria-label="Смертельный релиз">☠️</span>
       <div class="kwikbi-slide-logo"><img src="assets/images/kwikbi-logo.png" alt="Kwikbi"></div>
       <div class="case-metrics case-metrics--four">
-        <div class="metric-card"><strong>4+ месяца</strong><span>без релиза</span></div>
-        <div class="metric-card"><strong>43 задачи</strong><span>в одном регрессе</span></div>
-        <div class="metric-card"><strong>529 файлов</strong><span>изменено</span></div>
+        <div class="metric-card metric-card--pirate">
+          <img class="release-pirate-cat" src="assets/images/vm-exhausted-pirate-cat-transparent.png" alt="Уставший дизайнерский кот-пират с деревянной ногой и бутылкой рома">
+          <strong>4+ месяца</strong><span>без релиза</span>
+        </div>
+        <div class="metric-card metric-card--combined">
+          <div><strong>43 задачи</strong><span>в одном регрессе</span></div>
+          <div><strong>529 файлов</strong><span>изменено</span></div>
+        </div>
         <div class="metric-card"><strong>132 дня</strong><span>самому старому изменению</span></div>
       </div>
       <div class="release-104-bottom">
@@ -702,16 +626,16 @@
       <h2>Релизы стали выходить чаще. А код — свежее?</h2>
       <div class="kwikbi-slide-logo"><img src="assets/images/kwikbi-logo.png" alt="Kwikbi"></div>
       <table class="release-matrix">
-        <thead><tr><th>Релиз</th><th>104</th><th>105</th><th>106</th><th class="release-contrast">107</th><th>108</th><th>109</th></tr></thead>
+        <thead><tr><th>Релиз</th><th>104</th><th>105</th><th>106</th><th class="release-contrast">107</th><th>108</th><th>109</th><th>110</th></tr></thead>
         <tbody>
-          <tr><th>Дата</th><td>16.04</td><td>01.06</td><td>15.06</td><td class="release-contrast">07.07</td><td>20.07</td><td>03.08</td></tr>
-          <tr><th>Интервал между релизами</th><td>4+ месяца</td><td>46 дней</td><td>14 дней</td><td class="release-contrast">22 дня</td><td>13 дней</td><td>14 дней</td></tr>
-          <tr><th>Возраст самого старого коммита</th><td>132 дня</td><td>94 дня</td><td>24 дня</td><td class="release-contrast"><strong>102 дня</strong></td><td>27 дней</td><td>47 дней</td></tr>
+          <tr><th>Дата</th><td>16.04</td><td>01.06</td><td>15.06</td><td class="release-contrast">07.07</td><td>20.07</td><td>03.08</td><td>17.08</td></tr>
+          <tr><th>Интервал между релизами</th><td>4+ месяца</td><td>46 дней</td><td>14 дней</td><td class="release-contrast">22 дня</td><td>13 дней</td><td>14 дней</td><td>14 дней</td></tr>
+          <tr><th>Возраст самого старого коммита</th><td>132 дня</td><td>94 дня</td><td>24 дня</td><td class="release-contrast"><strong>102 дня</strong></td><td>27 дней</td><td>47 дней</td><td>34 дня</td></tr>
         </tbody>
       </table>
       <div class="conclusion">Частые релизы сами по себе не гарантируют частую интеграцию</div>
       <div class="vm-brand-footer footer-standard" aria-hidden="true"><img src="assets/images/vetmanager-footer-logo.png" alt=""></div>
-      <aside class="notes">Цель была выпускать Kwikbi раз в две-три недели, не ставить релиз в один день с Vetmanager и встроить регресс Kwikbi в график QA. По календарю мы приблизились к этому ритму: после четырёх месяцев паузы интервалы составили 46, 14, 22, 13 и 14 дней. Но вторая строка показывает другое: в 107-й релиз, вышедший примерно через три недели, попал коммит возрастом 102 дня. Это не точное время жизни MR, а время от авторской даты самого старого коммита до релиза. В 109-м релизе возраст самого старого коммита составил 47 дней. Значит, одного релизного календаря недостаточно: нужно, чтобы сам код не жил отдельно месяцами.</aside>
+      <aside class="notes">Цель была выпускать Kwikbi раз в две-три недели, не ставить релиз в один день с Vetmanager и встроить регресс Kwikbi в график QA. По календарю мы приблизились к этому ритму: после четырёх месяцев паузы интервалы составили 46, 14, 22, 13, 14 и 14 дней. Но вторая строка показывает другое: в 107-й релиз, вышедший примерно через три недели, попал коммит возрастом 102 дня. Это не точное время жизни MR, а время от авторской даты самого старого коммита до релиза. В 109-м релизе возраст самого старого коммита составил 47 дней, а в 110-м — 34 дня. Значит, одного релизного календаря недостаточно: нужно, чтобы сам код не жил отдельно месяцами.</aside>
     </section>
 
     <section class="content-fill ci-state-transition-slide">
